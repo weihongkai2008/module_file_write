@@ -7,16 +7,17 @@
 
 void fileread(const char * filename)
 {
-  struct file        *filp; //  文件结构体代表一个打开的文件
-  struct inode     *inode; //内核中用inode结构表示具体的文件，而用file结构表示打开的文件描述符
+  struct file        *filp; // structure file represent a file that be opened
+  struct inode     *inode;  //in the kernel, structure inode represent specific file
+							//structure file represent the file desciption that have been opened
   mm_segment_t       fs;
 
   off_t   fsize;
   char    *buf;
   unsigned long  magic;
   printk("<1>start....\n");
-  filp=filp_open(filename,O_RDONLY,0);          //文件结构
-  inode=filp->f_inode;                          //和具体文件联系一起
+  filp=filp_open(filename,O_RDONLY,0);          //file open in kernel
+  inode=filp->f_inode;                          //the inode infomation of specific file
 
   magic=inode->i_sb->s_magic;
 

@@ -1,0 +1,1 @@
+cmd_/home/weihongkai/module_file_write/module_dev_creat/module_dev_creat.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /home/weihongkai/module_file_write/module_dev_creat/module_dev_creat.ko /home/weihongkai/module_file_write/module_dev_creat/module_dev_creat.o /home/weihongkai/module_file_write/module_dev_creat/module_dev_creat.mod.o ;  true

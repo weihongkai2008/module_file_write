@@ -1,0 +1,3 @@
+/home/weihongkai/module_file_write/module_dev_creat/module_dev_creat_kernel/module_dev_creat_kernel.ko
+/home/weihongkai/module_file_write/module_dev_creat/module_dev_creat_kernel/module_dev_creat_kernel.o
+
