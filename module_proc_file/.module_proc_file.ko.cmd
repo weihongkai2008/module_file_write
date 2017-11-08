@@ -1,0 +1,1 @@
+cmd_/home/weihongkai/module_file_write/module_proc_file/module_proc_file.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /home/weihongkai/module_file_write/module_proc_file/module_proc_file.ko /home/weihongkai/module_file_write/module_proc_file/module_proc_file.o /home/weihongkai/module_file_write/module_proc_file/module_proc_file.mod.o ;  true
