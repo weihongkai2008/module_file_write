@@ -6,7 +6,9 @@
 #include <linux/sched.h>
 
 #define my_syscall_num 223
-#define sys_call_table_address 0xffffffff90200240
+#define sys_call_table_address 0xffffffffa9c00240
+
+//sudo cat /proc/kallsyms | grep sys_call_table
 
 unsigned long long *sys_call_table = 0;
 static unsigned long long*orig_saved;
