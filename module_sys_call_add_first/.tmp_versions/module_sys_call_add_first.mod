@@ -1,0 +1,3 @@
+/home/weihongkai/module_file_write/module_sys_call_add_first/module_sys_call_add_first.ko
+/home/weihongkai/module_file_write/module_sys_call_add_first/module_sys_call_add_first.o
+
