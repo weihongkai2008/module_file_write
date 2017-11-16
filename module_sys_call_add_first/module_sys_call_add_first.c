@@ -7,16 +7,16 @@
 
 #define my_syscall_num 223
 //sudo grep sys_call_table /boot/System.map-`uname -r`
-#define sys_call_table_adress 0xffffffff81a00240
+#define sys_call_table_adress 0xffffffff87800240
 
 
 unsigned int clear_and_return_cr0(void);
-void setback_cr0(unsigned int val);
+void setback_cr0(unsigned long val);
 asmlinkage long sys_mycall(void);
 
 int orig_cr0;
 unsigned long *sys_call_table = 0;
-static int (*anything_saved)(void);
+static unsigned long (*anything_saved)(void);
 
 unsigned int clear_and_return_cr0(void)
 {
@@ -29,7 +29,7 @@ unsigned int clear_and_return_cr0(void)
  return ret;
 }
 
-void setback_cr0(unsigned int val) //读取val的值到eax寄存器，再将eax寄存器的值放入cr0中
+void setback_cr0(unsigned long val) //读取val的值到eax寄存器，再将eax寄存器的值放入cr0中
 {
  asm volatile("movq %%rax, %%cr0"::"a"(val));
 }
@@ -38,10 +38,16 @@ static int __init init_addsyscall(void)
 {
  printk("hello, kernel\n");
  sys_call_table = (unsigned long *)sys_call_table_adress;//获取系统调用服务首地址
- anything_saved = (int(*)(void)) (sys_call_table[my_syscall_num]);//保存原始系统调用的地址
+ printk("log");
+ printk("%ld",sys_call_table[223]);
+ anything_saved = (unsigned long(*)(void)) (sys_call_table[my_syscall_num]);//保存原始系统调用的地址
+ printk("loog");
  orig_cr0 = clear_and_return_cr0();//设置cr0可更改
+ printk("looog");
  sys_call_table[my_syscall_num] = (unsigned long)&sys_mycall;//更改原始的系统调用服务地址
+ printk("loooog");
  setback_cr0(orig_cr0);//设置为原始的只读cr0
+ printk("looooog");
  return 0;
 }
 

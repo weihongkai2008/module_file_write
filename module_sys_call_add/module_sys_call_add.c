@@ -6,7 +6,7 @@
 #include <linux/sched.h>
 
 #define my_syscall_num 223
-#define sys_call_table_address 0x81a00240
+#define sys_call_table_address 0xffffffff90200240
 
 unsigned long long *sys_call_table = 0;
 static unsigned long long*orig_saved;
