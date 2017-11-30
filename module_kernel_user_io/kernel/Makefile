@@ -1,4 +1,4 @@
-obj-m := module_test.o
+obj-m := kernel_write.o
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(shell pwd) modules 
 clean:
