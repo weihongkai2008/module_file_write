@@ -6,7 +6,7 @@
 #include <linux/slab.h>
 #include <linux/timekeeping.h>
 
-#define FILE_BLOCK 16 
+#define FILE_BLOCK 2048 
 
 void do_gettimeofday(struct timeval *tv){
 	struct timespec now;
@@ -48,7 +48,7 @@ void fileread(const char * filename)
   fsize=inode->i_size;
   printk("<5>file size:%i \n",(int)fsize);
 
-  buf=(char *) kmalloc(FILE_BLOCK+1,GFP_ATOMIC);//get the mem from slab with the limit of maximum
+  buf=(char *) kmalloc(FILE_BLOCK,GFP_ATOMIC);//get the mem from slab with the limit of maximum
   
   filp->f_op->llseek(filp,0,0);
   fs=get_fs();
@@ -59,7 +59,7 @@ void fileread(const char * filename)
   }
 	set_fs(fs);
 
-  buf[fsize]='\0';
+  //buf[fsize]='\0';
   printk("<6>The File Content is:\n");
   printk("<7>%s",buf);
   filp_close(filp,NULL);
@@ -67,16 +67,31 @@ void fileread(const char * filename)
 
 void filewrite(char* filename, char* data)
 {
-  struct file *filp;
-  mm_segment_t fs;
-  filp = filp_open(filename, O_RDWR|O_APPEND, 0644);
-  if(IS_ERR(filp))
+  struct file *filp_out, *filp_in;
+	char *buf;
+	long ftime;
+	long count_time = 0;
+	struct timeval tva, tvb;	
 
+  mm_segment_t fs;
+  filp_out = filp_open("/home/weihongkai/Desktop/test_out.bin", O_RDWR|O_TRUNC|O_CREAT, 0777);
+	filp_in=filp_open("/home/weihongkai/Desktop/test.bin",O_RDONLY,0); 
+	
+	printk("log\n");
+	buf=(char *) kmalloc(FILE_BLOCK,GFP_ATOMIC);
+	printk("buf address: %x\n", buf);
   fs=get_fs();
   set_fs(get_ds());
-  vfs_write(filp, data, strlen(data),&filp->f_pos);
-  set_fs(fs);
-  filp_close(filp,NULL);
+	while (ftime = vfs_read(filp_in, buf, FILE_BLOCK, &(filp_in->f_pos))){
+		do_gettimeofday(&tva);
+  	vfs_write(filp_out, buf, ftime, &filp_out->f_pos);
+  	do_gettimeofday(&tvb);
+		count_time += delta(&tva, &tvb);
+	}
+	set_fs(fs);
+	printk(KERN_INFO"kernel write cost: %lu microseconds\n",count_time);
+  filp_close(filp_in, NULL);
+	filp_close(filp_out, NULL);
 }
 
 static int __init module_test_init(void)
@@ -87,12 +102,12 @@ static int __init module_test_init(void)
 
   printk("<1>Read File from Kernel.\n");
   printk("%s", filename);
-  do_gettimeofday(&tvb);
-	fileread(filename);
-	do_gettimeofday(&tvb);
-	count_time += delta(&tva, &tvb);
-	printk(KERN_INFO"kernel read cost: %lu microseconds\n",count_time);
-  //filewrite(filename, "kernel write test\n");
+  //do_gettimeofday(&tvb);
+	//fileread(filename);
+	//do_gettimeofday(&tvb);
+	//count_time += delta(&tva, &tvb);
+	//printk(KERN_INFO"kernel read cost: %lu microseconds\n",count_time);
+  filewrite(filename, "kernel write test\n");
   return 0;
 }
 
