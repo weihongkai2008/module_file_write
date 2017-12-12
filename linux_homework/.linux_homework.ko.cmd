@@ -1,0 +1,1 @@
+cmd_/home/weihongkai/linux_homework/linux_homework.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /home/weihongkai/linux_homework/linux_homework.ko /home/weihongkai/linux_homework/linux_homework.o /home/weihongkai/linux_homework/linux_homework.mod.o ;  true
