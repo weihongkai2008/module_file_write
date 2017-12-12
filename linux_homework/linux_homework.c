@@ -14,7 +14,9 @@ static int counter = 0;
 struct process
 {
 	int pid;
-	int depth;
+	unsigned long proc_state;
+	unsigned long proc_pcounter;
+	unsigned long proc_utime;
 	unsigned long stack_start;
 	unsigned long stack_end;
 	unsigned long code_start;
@@ -23,6 +25,7 @@ struct process
 	unsigned long data_end;
 	unsigned long brk_start;
 	unsigned long brk;
+	unsigned long map_count;
 };
 
 struct process a[1];
@@ -42,7 +45,9 @@ void processtree(struct task_struct * p,int b, int pid)
 
 	if(p->pid == pid){
 		a[0].pid = p->pid;
-		a[0].depth = 123;
+		a[0].proc_state = p->state;
+		a[0].proc_pcounter = p->cpu;
+		a[0].proc_utime = p->utime;
 		tmp = p->mm;
 		printk("mm address: %x\n", p->active_mm);
 		if(!tmp){
@@ -60,6 +65,8 @@ void processtree(struct task_struct * p,int b, int pid)
 		a[0].data_end = tmp->end_data;
 		a[0].brk_start = tmp->start_brk;
 		a[0].brk = tmp->brk;
+		a[0].map_count = tmp->map_count;
+		return;
 	}
 	
 	counter ++;
@@ -107,16 +114,12 @@ asmlinkage long sys_mycall(char __user * buf, int pid)
 	for(p = current; p != &init_task; p = p->parent );
 		processtree(p, b, pid);
 		
-	//p = current;
-	//tmp = p->active_mm;
-	//if(tmp){
 	//printk("pid: %d\n", p->pid);
 	//printk("code address: %x---%x\n", tmp->start_code, tmp->end_code);	
 	//printk("data address: %x---%x\n", tmp->start_data, tmp->end_data);
 	//printk("heap address: %x---%x\n", tmp->start_brk, tmp->brk);
 	//printk("stack address: %x---%x\n", tmp->start_stack, tmp->arg_start);
 	//printf("number of VMAs: %d\n", tmp->map_count);
-	//}
 	if(copy_to_user((struct process *)buf, a, sizeof(struct process)))
 		return -EFAULT;
 	else
