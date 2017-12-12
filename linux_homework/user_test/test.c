@@ -3,31 +3,30 @@
 #include <sys/types.h>  
 #include <stdio.h>  
   
-struct process  
-{  
-    int pid;  
-    int depth;  
-		unsigned stack_start;
-		unsigned stack_end;
+struct process
+{
+    int pid;
+    int depth;
+    unsigned long stack_start;
+    unsigned long stack_end;
+    unsigned long code_start;
+    unsigned long code_end;
+    unsigned long data_start;
+    unsigned long data_end;
+    unsigned long brk_start;
+    unsigned long brk;
 };  
-  
-struct process a[512];  
+
+struct process a;  
   
 int main()  
 {  
     int i,j;  
   
-    printf("the result is:%d\n",syscall(223,&a));  
+    printf("the result is:%d\n",syscall(223, &a, 1225));  
   
-    for(i = 0; i < 512; i++)  
-    {  
-        for(j = 0; j < a[i].depth; j++)  
-            printf("|-");  
-        printf("%d\n",a[i].pid);  
-      	printf("stack: %x--%x\n",a[i].stack_start, a[i].stack_end);
-        if(a[i+1].pid == 0)  
-            break;  
-    }  
+    printf("%d\n",a.pid);  
+    printf("stack: %x--%x\n",a.stack_start, a.stack_end);
   
     return 0;  
 }  

@@ -17,39 +17,56 @@ struct process
 	int depth;
 	unsigned long stack_start;
 	unsigned long stack_end;
+	unsigned long code_start;
+	unsigned long code_end;
+	unsigned long data_start;
+	unsigned long data_end;
+	unsigned long brk_start;
+	unsigned long brk;
 };
 
-struct process a[512];
+struct process a[1];
 
 unsigned int clear_and_return_cr0(void);
 void setback_cr0(unsigned int val);
-asmlinkage long sys_mycall(char __user *buf);
+asmlinkage long sys_mycall(char __user *buf, int pid);
 int orig_cr0;
 unsigned long *sys_call_table = 0;
 static int (*anything_saved)(void);
 
 
-void processtree(struct task_struct * p,int b)
+void processtree(struct task_struct * p,int b, int pid)
 {
 	struct list_head * l;
 	struct mm_struct *tmp;
-	//printk("log");
-	//tmp = p->active_mm;
-	//printk("%x\n",tmp);
-	a[counter].pid = p -> pid;
-	a[counter].depth = b;
-	//if (!tmp){
-	//	a[counter].stack_start = 0;
-	//	a[counter].stack_end = 0;
-	//}
-	//a[counter].stack_start = tmp->start_stack;
-	//a[counter].stack_end = tmp->arg_start;
-	//printk("%x\n", a[counter].stack_start);
+
+	if(p->pid == pid){
+		a[0].pid = p->pid;
+		a[0].depth = 123;
+		tmp = p->mm;
+		printk("mm address: %x\n", p->active_mm);
+		if(!tmp){
+			tmp = p->active_mm;
+			if(!tmp){
+				printk(KERN_ALERT "mm_struct error!!");
+				return;
+			}
+		}
+		a[0].stack_start = tmp->start_stack;
+		a[0].stack_end = tmp->arg_start;
+		a[0].code_start = tmp->start_code;
+		a[0].code_end = tmp->end_code;
+		a[0].data_start = tmp->start_data;
+		a[0].data_end = tmp->end_data;
+		a[0].brk_start = tmp->start_brk;
+		a[0].brk = tmp->brk;
+	}
+	
 	counter ++;
 	for(l = p -> children.next; l != &(p->children); l = l->next)
 	{
 		struct task_struct *t = list_entry(l,struct task_struct,sibling);
-		processtree(t,b+1);
+		processtree(t, b+1, pid);
 	}
 }
 
@@ -81,30 +98,29 @@ static int __init init_addsyscall(void)
 	return 0;
 }
 
-asmlinkage long sys_mycall(char __user * buf)
+asmlinkage long sys_mycall(char __user * buf, int pid)
 {
   int b = 0;
 	struct task_struct * p;
-	struct mm_struct *tmp;
-	printk("This is lihuan_syscall!\n");
+	printk("This is hacked syscall!\n");
 
-	//for(p = current; p != &init_task; p = p->parent );
-	//	processtree(p,b);
+	for(p = current; p != &init_task; p = p->parent );
+		processtree(p, b, pid);
 		
-	p = current;
-	tmp = p->active_mm;
-	if(tmp){
-	printk("pid: %d\n", p->pid);
-	printk("code address: %x---%x\n", tmp->start_code, tmp->end_code);	
-	printk("data address: %x---%x\n", tmp->start_data, tmp->end_data);
-	printk("heap address: %x---%x\n", tmp->start_brk, tmp->brk);
-	printk("stack address: %x---%x\n", tmp->start_stack, tmp->arg_start);
-	printf("number of VMAs: %d\n", tmp->map_count);
-	}
-	//if(copy_to_user((struct process *)buf,a,512*sizeof(struct process)))
-	//	return -EFAULT;
-	//else
-	//	return sizeof(a);
+	//p = current;
+	//tmp = p->active_mm;
+	//if(tmp){
+	//printk("pid: %d\n", p->pid);
+	//printk("code address: %x---%x\n", tmp->start_code, tmp->end_code);	
+	//printk("data address: %x---%x\n", tmp->start_data, tmp->end_data);
+	//printk("heap address: %x---%x\n", tmp->start_brk, tmp->brk);
+	//printk("stack address: %x---%x\n", tmp->start_stack, tmp->arg_start);
+	//printf("number of VMAs: %d\n", tmp->map_count);
+	//}
+	if(copy_to_user((struct process *)buf, a, sizeof(struct process)))
+		return -EFAULT;
+	else
+		return sizeof(a);
 }
 
 static void __exit exit_addsyscall(void)
