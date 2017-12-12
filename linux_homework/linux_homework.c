@@ -26,10 +26,13 @@ struct process
 	unsigned long brk_start;
 	unsigned long brk;
 	unsigned long map_count;
+	unsigned long vma_address_start[256];
+	unsigned long vma_address_end[256];
+	unsigned long vma_maped[256];
 };
 
 struct process a[1];
-
+int vma_count = 0;
 unsigned int clear_and_return_cr0(void);
 void setback_cr0(unsigned int val);
 asmlinkage long sys_mycall(char __user *buf, int pid);
@@ -42,6 +45,7 @@ void processtree(struct task_struct * p,int b, int pid)
 {
 	struct list_head * l;
 	struct mm_struct *tmp;
+	struct vm_area_struct *vma_cur;
 
 	if(p->pid == pid){
 		a[0].pid = p->pid;
@@ -49,7 +53,6 @@ void processtree(struct task_struct * p,int b, int pid)
 		a[0].proc_pcounter = p->cpu;
 		a[0].proc_utime = p->utime;
 		tmp = p->mm;
-		printk("mm address: %x\n", p->active_mm);
 		if(!tmp){
 			tmp = p->active_mm;
 			if(!tmp){
@@ -66,6 +69,17 @@ void processtree(struct task_struct * p,int b, int pid)
 		a[0].brk_start = tmp->start_brk;
 		a[0].brk = tmp->brk;
 		a[0].map_count = tmp->map_count;
+		vma_cur = tmp->mmap;
+		printk("vma address:%x\n", tmp->mmap->vm_start);
+		while ((vma_cur) && (vma_count < 256)){
+			a[0].vma_address_start[vma_count] = vma_cur->vm_start;
+			a[0].vma_address_end[vma_count] = vma_cur->vm_end;
+			a[0].vma_maped[vma_count] = vma_cur->vm_pgoff;
+			printk("%x   %x   %x\n", vma_cur->vm_start, vma_cur->vm_end, vma_cur->vm_pgoff);
+			vma_count++;
+			vma_cur = vma_cur->vm_next;
+		}
+		
 		return;
 	}
 	
@@ -108,22 +122,17 @@ static int __init init_addsyscall(void)
 asmlinkage long sys_mycall(char __user * buf, int pid)
 {
   int b = 0;
+	int vma_count;
 	struct task_struct * p;
 	printk("This is hacked syscall!\n");
 
 	for(p = current; p != &init_task; p = p->parent );
 		processtree(p, b, pid);
 		
-	//printk("pid: %d\n", p->pid);
-	//printk("code address: %x---%x\n", tmp->start_code, tmp->end_code);	
-	//printk("data address: %x---%x\n", tmp->start_data, tmp->end_data);
-	//printk("heap address: %x---%x\n", tmp->start_brk, tmp->brk);
-	//printk("stack address: %x---%x\n", tmp->start_stack, tmp->arg_start);
-	//printf("number of VMAs: %d\n", tmp->map_count);
 	if(copy_to_user((struct process *)buf, a, sizeof(struct process)))
-		return -EFAULT;
+		return -1;
 	else
-		return sizeof(a);
+		return vma_count;
 }
 
 static void __exit exit_addsyscall(void)
