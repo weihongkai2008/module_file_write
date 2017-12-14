@@ -1,0 +1,1 @@
+cmd_/home/weihongkai/module_file_write/module_socket/server/module_server.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /home/weihongkai/module_file_write/module_socket/server/module_server.ko /home/weihongkai/module_file_write/module_socket/server/module_server.o /home/weihongkai/module_file_write/module_socket/server/module_server.mod.o ;  true
