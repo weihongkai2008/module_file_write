@@ -8,7 +8,7 @@
 #define my_syscall_num 223
 
 //sudo cat /proc/kallsyms | grep sys_call_table
-#define sys_call_table_address 0xffffffff8b200240
+#define sys_call_table_address 0xffffffff92c00240
 
 static int counter = 0;
 struct process

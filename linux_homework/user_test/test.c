@@ -30,7 +30,7 @@ int main()
     int i,j;  
   
     //printf("the result is:%d\n",syscall(223, &a, 1225));  
- 		syscall(223, &a, 1225); 
+ 		syscall(223, &a, 2025); 
 		//printf("j = %d", j);
 		printf("pid: %d\n", a.pid);
 		printf("process state(-1 unrunnable, 0 runnable, >0 stopped): %d\n", a.proc_state);

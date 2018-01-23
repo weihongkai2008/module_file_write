@@ -2,7 +2,11 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <linux/if_ether.h>
-#include <linux/in.h>
+
+#include <net/ethernet.h>
+#include <netinet/tcp.h> 
+#include <netinet/udp.h> 
+#include <netinet/ip.h> 
 
 #define BUFFER_MAX 2048
  
@@ -27,12 +31,30 @@ typedef struct ip_header{
 //  u_int   op_pad;         // Option + Padding
 }ip_header;
 
+typedef struct _udp_hdr
+{
+	unsigned short src_port; //远端口号
+	unsigned short dst_port; //目的端口号
+	unsigned short uhl;   //udp头部长度
+	unsigned short chk_sum; //16位udp检验和
+}udp_hdr;
+
+//typedef struct _tcp_hdr
+//{
+//	unsigned short src_port;   //源端口号
+//	unsigned short dst_port;   //目的端口号
+//	unsigned int seq_no;    //序列号
+//	unsigned int ack_no;    //确认号
+//}tcp_hdr;
+
 int main(int argc, char *argv[]){
      int  SOCKET_SRC;
      char buf[BUFFER_MAX];
      int n_rd;
+		 struct udphdr *udpheader;
+		 struct tcphdr *tcpheader;
 
-     if( (SOCKET_SRC = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_IP))) < 0 ){
+     if( (SOCKET_SRC = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_IP))) < 0 ){
          printf("create socket error.\n");
          exit(0);
      }
@@ -47,20 +69,34 @@ int main(int argc, char *argv[]){
     	 /* An Ethernet frame was written to buf, frame analysis can be processed here */
     	 /* Termination control */
 		
-			 	ip_header *ipheader;
-       	ipheader = (struct ip_header *)&buf[14];
-				printf("\n-------------\nrecv %d bytes \n",n_rd);
-       	printf("sourceIP:%d.%d.%d.%d\n",ipheader->saddr.byte1,ipheader->saddr.byte2,ipheader->saddr.byte3,ipheader->saddr.byte4);
-       	printf("destinationIP:%d.%d.%d.%d\n",ipheader->daddr.byte1,ipheader->daddr.byte2,ipheader->daddr.byte3,ipheader->daddr.byte4);
-        
+			 	struct ip_header *ipheader;
+				struct iphdr *iphdr_self;
+				char *data1;
+        char *data2;
+       	data1 = buf + sizeof( struct ether_header );
+				data2 = buf + sizeof(struct ether_header);
+				ipheader = (struct ip_header *)data1;
+				
 			 	if(6 == (int)ipheader->proto){
             printf("TCP Packet\n");
-       	}
+            printf("\n-------------\nrecv %d bytes \n",n_rd);
+            printf("sourceIP:%d.%d.%d.%d\n",ipheader->saddr.byte1,ipheader->saddr.byte2,ipheader->saddr.byte3,ipheader->saddr.byte4);
+            printf("destinationIP:%d.%d.%d.%d\n",ipheader->daddr.byte1,ipheader->daddr.byte2,ipheader->daddr.byte3,ipheader->daddr.byte4);
+						iphdr_self = (struct iphdr *)data2;	
+						char *pdata = data2 + iphdr_self->ihl * 4;
+						tcpheader = (struct tcphdr *)pdata;
+						printf("tcp port: %d -> %d\n", ntohs(tcpheader->source), tcpheader->dest);
+				}
        	else if(17 == (int)ipheader->proto){
-            printf("UDP Packet\n");
-       	}
-				if ((ipheader->saddr.byte1 == 220) && (ipheader->saddr.byte2 == 181) && (ipheader->saddr.byte3 == 111) && (ipheader->saddr.byte4 == 188)){
-				printf("package from baidu!!");
+						printf("UDP Packet\n");
+            printf("\n-------------\nrecv %d bytes \n",n_rd);
+            printf("sourceIP:%d.%d.%d.%d\n",ipheader->saddr.byte1,ipheader->saddr.byte2,ipheader->saddr.byte3,ipheader->saddr.byte4);
+            printf("destinationIP:%d.%d.%d.%d\n",ipheader->daddr.byte1,ipheader->daddr.byte2,ipheader->daddr.byte3,ipheader->daddr.byte4);
+
+						iphdr_self = (struct iphdr *)data2;
+            char *pdata = data2 + iphdr_self->ihl * 4;
+						udpheader = (struct udphdr *)pdata;
+						printf("udp port: %d -> %d\n", ntohs(udpheader->source), udpheader->dest);
 				}
      }
      close(SOCKET_SRC);
