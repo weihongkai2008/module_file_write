@@ -95,16 +95,6 @@ void do_ip( char * data );
 /* 打印ip头信息          */
 void print_ip( struct iphdr * );
  
-/* 处理arp层数据        */
-void do_arp( char * data );
- 
-/* 打印arp头信息            */
-void print_arp( struct arphdr * );
- 
-/* 处理rarp数据            */
-void do_rarp( char * data );
- 
- 
 /* 处理tcp层数据            */
 void do_tcp( char * data );
  
@@ -116,20 +106,6 @@ void do_udp( char * data );
  
 /* 打印udp层头信息           */
 void print_udp( struct udphdr * );
- 
- 
-/* 处理icmp层数据           */
-void do_icmp( char * data );
- 
-/* 打印icmp头信息           */
-void print_icmp( struct icmphdr * );
- 
-/* 处理igmp层数据           */
-void do_igmp( char * data );
- 
-/* 打印igmp头信息           */
-void print_igmp( struct igmphdr * );
- 
  
  
 /* 初始化一个全局结构体         */
@@ -237,14 +213,14 @@ void help( void )
  
 void print_udp( struct udphdr * pudp )
 {
-    printf("==================== udp 头信息 ======================\n");
-    printf("16位源端口号  : %d\n", ntohs( pudp->source ) );
-    printf("16位目的端口号:   %d\n", ntohs( pudp->dest ) );
-    printf("16位udp长度: %d\n", ntohs( pudp->len ) );
-    printf("16位udp校验和: %d\n", ntohs( pudp->check ) );
+    printf("==================== udp header info ======================\n");
+    printf("port info:  %d -> %d\n", ntohs( pudp->source ), ntohs( pudp->dest ) );
+    //printf("16位目的端口号:   %d\n", ntohs( pudp->dest ) );
+    //printf("16位udp长度: %d\n", ntohs( pudp->len ) );
+    //printf("16位udp校验和: %d\n", ntohs( pudp->check ) );
     if( ntohs( pudp->len ) != sizeof(struct udphdr ) && ntohs( pudp->len ) < 20 ){
         char * data = ( char * )pudp + sizeof( struct udphdr );
-        printf("UDP数据: %s\n", data );
+    //    printf("UDP数据: %s\n", data );
     }
 }
  
@@ -260,33 +236,32 @@ void do_udp( char * data )
  
 void print_tcp( struct tcphdr * ptcp )
 {
-    printf("==================== tcp 头信息 =====================\n");
-    printf("源端口号  : %d\n", ntohs( ptcp->source ) );
-    printf("目的端口号: %d\n", ntohs( ptcp->dest ) );
-    printf("32位序列号  : %u\n", ntohl( ptcp->seq ) );
-    printf("32位确认序号: %u\n", ntohl( ptcp->ack_seq ) );
-    printf("首部长度: %d\n", ptcp->doff * 4 );
-    printf("6个标志位: \n");
-    printf("    紧急指针 urg : %d\n", ptcp->urg );
-    printf("    确认序号位 ack : %d\n", ptcp->ack );
-    printf("    接受方尽快将报文交给应用层 psh : %d\n", ptcp->psh );
-    printf("    重建连接 rst : %d\n", ptcp->rst );
-    printf("    用来发起连接的同步序号 syn : %d\n", ptcp->syn );
-    printf("    发送端完成任务 fin : %d\n", ptcp->fin );
-    printf("16位窗口大小: %d\n", ntohs( ptcp->window ) );
-    printf("16位校验和: %d\n", ntohs( ptcp->check ) );
-    printf("16位紧急指针: %d\n", ntohs( ptcp->urg_ptr ) );
+    printf("==================== tcp header info =====================\n");
+    printf("port info:  %d -> %d\n", ntohs( ptcp->source ), ntohs( ptcp->dest ) );
+    //printf("目的端口号: %d\n", ntohs( ptcp->dest ) );
+    //printf("32位序列号  : %u\n", ntohl( ptcp->seq ) );
+    //printf("32位确认序号: %u\n", ntohl( ptcp->ack_seq ) );
+    //printf("首部长度: %d\n", ptcp->doff * 4 );
+    //printf("6个标志位: \n");
+    //printf("    紧急指针 urg : %d\n", ptcp->urg );
+    //printf("    确认序号位 ack : %d\n", ptcp->ack );
+    //printf("    接受方尽快将报文交给应用层 psh : %d\n", ptcp->psh );
+    //printf("    重建连接 rst : %d\n", ptcp->rst );
+    //printf("    用来发起连接的同步序号 syn : %d\n", ptcp->syn );
+    //printf("    发送端完成任务 fin : %d\n", ptcp->fin );
+    //printf("16位窗口大小: %d\n", ntohs( ptcp->window ) );
+    //printf("16位校验和: %d\n", ntohs( ptcp->check ) );
+    //printf("16位紧急指针: %d\n", ntohs( ptcp->urg_ptr ) );
          
-    if( ptcp->doff * 4 == 20 ){
-        printf("选项数据: 没有\n");
-    } else {
-        printf("选项数据: %d 字节\n", ptcp->doff * 4 - 20 );
-    }
+    //if( ptcp->doff * 4 == 20 ){
+    //    printf("选项数据: 没有\n");
+    //} else {
+    //    printf("选项数据: %d 字节\n", ptcp->doff * 4 - 20 );
+    //}
      
     char * data = ( char * )ptcp;
     data += ptcp->doff * 4;
-    printf("数据长度: %d 字节\n", strlen(data) );
-    if( strlen(data) < 10 )printf("数据: %s\n", data );
+    //printf("数据长度: %d 字节\n", strlen(data) );
 }
  
 void do_tcp( char * data )
@@ -300,236 +275,20 @@ void do_tcp( char * data )
         print_tcp( ptcp );
 }
  
-void print_igmp( struct igmphdr * pigmp )
-{
-    printf("====================  igmp 包信息 ==========================\n");
-    printf("igmp 版本: %d\n", pigmp->type & 15 );
-    printf("igmp 类型: %d\n", pigmp->type >> 4 );
-    printf("igmp 码: %d\n", pigmp->code );
-    printf("igmp 校验和: %d\n", ntohs( pigmp->csum ) );
-    printf("igmp 组地址: %d\n", ntohl( pigmp->group ) );
-}
- 
-void do_igmp( char * data )
-{
-    global.packet_igmp ++;
-    struct igmphdr * pigmp = ( struct igmphdr * ) data;
-     
-    if( global.print_flag_igmp )
-        print_igmp( pigmp );
-}
- 
-void print_icmp( struct icmphdr * picmp )
-{
-    printf("==================== icmp 包信息 ===========================\n");
-     
-    printf("消息类型: %d ", picmp->type );
-        switch( picmp->type ){
-            case ICMP_ECHOREPLY:
-                printf("Ping的回显应答\n");
-                break;
-            case ICMP_DEST_UNREACH:
-                    printf("目的不可达\n");
-                break;
-            case ICMP_SOURCE_QUENCH:
-                printf("源端被关闭\n");
-                break;
-            case ICMP_REDIRECT:
-                printf("重定相\n"); 
-                break;
-            case ICMP_ECHO:
-                printf("ping的回显请求\n");   
-                break;
-            case ICMP_TIME_EXCEEDED:
-                printf("超时\n");
-                break;
-            case ICMP_PARAMETERPROB:
-                printf("参数问题\n");
-                break;
-            case ICMP_TIMESTAMP:
-                printf("时间戳请求\n");  
-                break;
-            case ICMP_TIMESTAMPREPLY:
-                printf("时间戳应答\n");  
-                break;
-            case ICMP_INFO_REQUEST:
-                printf("信息请求\n"); 
-                break;
-            case ICMP_INFO_REPLY:
-                printf("信息应答\n");
-                break;
-            case ICMP_ADDRESS:
-                printf("地址掩码请求\n");
-                break;
-            case ICMP_ADDRESSREPLY:
-                printf("地址掩码应答\n");
-                break;
-            default:
-                printf("未知消息类型\n");
-                break;
-        }
-    printf("消息类型的子选项: %d ", picmp->code );
-        switch( picmp->type ){
-            case ICMP_ECHOREPLY:
-                printf("Ping的回显应答\n");
-                break;
-            case ICMP_DEST_UNREACH:
-                switch( picmp->type ){
-                    case ICMP_NET_UNREACH:
-                        printf("网络不可到达\n");
-                        break;
-                    case ICMP_HOST_UNREACH:
-                        printf("主机不可到达\n"); 
-                        break;
-                    case  ICMP_PROT_UNREACH:
-                        printf("协议不可到达\n");
-                        break; 
-                    case  ICMP_PORT_UNREACH:
-                        printf("端口不可到达\n");
-                        break;
-                    case  ICMP_FRAG_NEEDED:
-                        printf("需要进行分片,但是又设置不分片位\n");
-                        break;
-                    case  ICMP_SR_FAILED:
-                        printf("源站选路失败\n");
-                        break;
-                    case  ICMP_NET_UNKNOWN:
-                        printf("目的网络不认识\n");
-                        break;
-                    case  ICMP_HOST_UNKNOWN:
-                        printf("目的主机不认识\n");
-                        break;
-                    case  ICMP_HOST_ISOLATED:
-                        printf("源主机北隔离\n");
-                        break;
-                    case  ICMP_NET_ANO:
-                        printf("目的网络被强制禁止\n");
-                        break;
-                    case  ICMP_HOST_ANO:
-                        printf("目的主机被强制禁止\n");
-                        break;
-                    case  ICMP_NET_UNR_TOS:
-                        printf("由于服务类型TOS,网络不可到达\n");
-                        break;
-                    case  ICMP_HOST_UNR_TOS:
-                        printf("由于服务类型TOS,主机不可到达\n");
-                        break;
-                    case  ICMP_PKT_FILTERED:
-                        printf("由于过滤,通信被强制禁止\n");
-                        break;
-                    case  ICMP_PREC_VIOLATION:
-                        printf("主机越权\n");
-                        break;
-                    case  ICMP_PREC_CUTOFF:
-                        printf("优先权中止生效\n");
-                        break;
-                    default:
-                        printf("未知代码\n");
-                        break;
- 
-                }
-                break;
-            case ICMP_SOURCE_QUENCH:
-                printf("源端被关闭\n");
-                break;
-            case ICMP_REDIRECT:
-                switch( picmp->type ){
-                    case ICMP_REDIR_NET:
-                        printf("对网络重定向\n");
-                        break;
-                    case ICMP_REDIR_HOST:
-                        printf("对主机重定向\n");  
-                        break;
-                    case ICMP_REDIR_NETTOS:
-                        printf("对服务类型和网络重定向\n"); 
-                        break;
-                    case ICMP_REDIR_HOSTTOS:
-                        printf("对服务类型和主机重定向\n");
-                        break;
-                    defalut:
-                        printf("未知代码\n");
-                        break;
-                }
-                break;
-            case ICMP_ECHO:
-                printf("ping的回显请求\n");   
-                break;
-            case ICMP_TIME_EXCEEDED:
-                switch( picmp->type ){
-                    case ICMP_EXC_TTL:
-                        printf("在传输期间生存时间为0\n");
-                        break;
-                    case ICMP_EXC_FRAGTIME:
-                        printf("在数据组装期间生存时间为0\n");
-                        break;
-                    default:
-                        printf("未知代码\n");
-                        break;
-                }
-                break;
-            case ICMP_PARAMETERPROB:
-                switch( picmp->type ){
-                    case 0:
-                        printf("IP首部错误(包括各种差错)\n");
-                        break;
-                    case 1:
-                        printf("缺少必须的选项\n");
-                        break;
-                    default:
-                        printf("原因未知\n");
-                        break;
-                }
-                break;
-            case ICMP_TIMESTAMP:
-                printf("时间戳请求\n");  
-                break;
-            case ICMP_TIMESTAMPREPLY:
-                printf("时间戳应答\n");  
-                break;
-            case ICMP_INFO_REQUEST:
-                printf("信息请求\n"); 
-                break;
-            case ICMP_INFO_REPLY:
-                printf("信息应答\n");
-                break;
-            case ICMP_ADDRESS:
-                printf("地址掩码请求\n");
-                break;
-            case ICMP_ADDRESSREPLY:
-                printf("地址掩码应答\n");
-                break;
-            default:
-                printf("未知消息类型\n");
-                break;
-        }
- 
-    printf("校验和: %d\n", ntohs(picmp->checksum) );
-}
- 
-void do_icmp( char * data )
-{
-    global.packet_icmp ++;
- 
-    struct icmphdr * picmp = ( struct icmphdr * ) data;
-     
-    if( global.print_flag_icmp )
-        print_icmp( picmp );
-}
- 
 void print_ip( struct iphdr * iph )
 {
-    printf("=============== ip 头信息 ===============\n");
-    printf("IP 首部长度:%d\n", iph->ihl * 4 );
-    printf("IP 版本    :%d\n", iph->version );
-    printf("服务类型(tos): %d\n", iph->tos );
-    printf("总长度字节: %d\n", ntohs(iph->tot_len) );
-    printf("16位标识: %d\n", ntohs(iph->id) );
-    printf("frag off: %d\n", ntohs(iph->frag_off) );
-    printf("8位生存事件: %d\n", iph->ttl );
-    printf("8位协议: %d\n", iph->protocol );
-    printf("16位首部校验和: %d\n", ntohs(iph->check) );
-    printf("32位源IP地址  : %s\n", inet_ntoa( *(struct in_addr *)(&iph->saddr)) );
-    printf("32位目的IP地址: %s\n", inet_ntoa( *(struct in_addr *)(&iph->daddr)) );
+    printf("=============== ip header info ===============\n");
+    //printf("IP 首部长度:%d\n", iph->ihl * 4 );
+    //printf("IP 版本    :%d\n", iph->version );
+    //printf("服务类型(tos): %d\n", iph->tos );
+    //printf("总长度字节: %d\n", ntohs(iph->tot_len) );
+    //printf("16位标识: %d\n", ntohs(iph->id) );
+    //printf("frag off: %d\n", ntohs(iph->frag_off) );
+    //printf("8位生存事件: %d\n", iph->ttl );
+    //printf("8位协议: %d\n", iph->protocol );
+    //printf("16位首部校验和: %d\n", ntohs(iph->check) );
+    printf("source IP address : %s\n", inet_ntoa( *(struct in_addr *)(&iph->saddr)) );
+    printf("destination IP address : %s\n", inet_ntoa( *(struct in_addr *)(&iph->daddr)) );
          
 }
  
@@ -554,10 +313,10 @@ void do_ip( char * data )
      
     switch( pip->protocol ){
         case IPPROTO_ICMP:
-            do_icmp( pdata );
+            //do_icmp( pdata );
             break;
         case IPPROTO_IGMP:
-            do_igmp( pdata );
+            //do_igmp( pdata );
             break;
         case IPPROTO_TCP:
             do_tcp( pdata );
@@ -571,130 +330,21 @@ void do_ip( char * data )
     }
 }
  
-void print_arp( struct arphdr * parp )
-{
- 
-    printf("硬件类型: %d ", ntohs(parp->ar_hrd) );
-        switch( ntohs( parp->ar_hrd ) ){
-            case ARPHRD_ETHER:
-                printf("Ethernet 10/100Mbps.\n");  
-                break;
-            case ARPHRD_EETHER:
-                printf("Experimental Ethernet.\n");
-                break;
-            case ARPHRD_AX25:
-                printf("AX.25 Level 2.\n");
-                break;
-            case ARPHRD_PRONET:
-                printf("PROnet token ring.\n");
-                break;
-            case ARPHRD_IEEE802:
-                printf("IEEE 802.2 Ethernet/TR/TB.\n");
-                break;
-            case ARPHRD_APPLETLK:
-                printf("APPLEtalk.\n");
-                break;
-            case ARPHRD_ATM:   
-                printf("ATM.\n");                      
-                break;
-            case ARPHRD_IEEE1394:
-                printf("IEEE 1394 IPv4 .\n");
-                break;
-            default:
-                printf("Unknow.\n");
-                break;
-        }
-    printf("映射的协议地址类型: %d ", ntohs(parp->ar_pro) );
-        switch( ntohs(parp->ar_pro) ){
-            case ETHERTYPE_IP:
-                printf("IP.\n");
-                break;
-            default:
-                printf("error.\n");
-                break;
-        }
-    printf("硬件地址长度: %d\n", parp->ar_hln );
-    printf("协议地址长度: %d\n", parp->ar_pln );
-    printf("操作码: %d ", ntohs(parp->ar_op) );
-        switch( ntohs(parp->ar_op) ){
-            case ARPOP_REQUEST:
-                printf("ARP 请求.\n");
-                break;
-            case ARPOP_REPLY:  
-                printf("ARP 应答.\n");
-                break;
-            case ARPOP_RREQUEST:
-                printf("RARP 请求.\n");
-                break;
-            case ARPOP_RREPLY:
-                printf("RARP 应答.\n");
-                break;
-            case ARPOP_InREQUEST:
-                printf("InARP 请求.\n");
-                break;
-            case ARPOP_InREPLY:
-                printf("InARP 应答.\n");         
-                break;
-            case ARPOP_NAK:
-                printf("(ATM)ARP NAK.\n");
-                break;
-            default:
-                printf("arp 操作码错误.\n");
-                break;
-        }
-     
-    char * addr = (char*)(parp + 1);
-    char buf[18];
-    mac_to_str( addr, buf );
-    printf("发送端以太网地址: %s\n", buf );
-    printf("发送端IP地址:     %s\n", inet_ntoa( *(struct in_addr *)(addr+6) ));
-    mac_to_str( addr+10, buf );
-    printf("目的以太网地址: %s\n", buf );
-    printf("目的IP地址:     %s\n", inet_ntoa( *(struct in_addr *)(addr+16) ));
-}
- 
-void do_arp( char * data )
-{
-    global.packet_arp ++;
- 
-    struct arphdr * parp;
-    parp = ( struct arphdr * ) data;
-     
-    if( global.print_flag_arp ) {
-        printf("============= arp 头信息 ==============\n");
-        print_arp( parp );
-    }
-}
- 
-void do_rarp( char * data )
-{
-    global.packet_rarp ++;
- 
- 
-    struct arphdr * parp;
-    parp = ( struct arphdr * ) data;
-     
-    if( global.print_flag_rarp ){
-        printf("============= rarp 头信息 =============\n");
-        print_arp( parp );
-    }
-}
- 
 /* 打印以太网帧的包头信息 */
 void print_frame( struct ether_header * peth )
 {
     /* 定义一个数组，用于存储把mac地址转换成字符串后的字符串 */
     char buf[ 18 ];
  
-    printf("\n==================================   第 %d 个包  =======================================\n\n", global.packet_num );
-    printf("==== 以太网帧信息 =====\n");
+    printf("\n==================================    %d th packets  =======================================\n\n", global.packet_num );
+    printf("==== ethernet info =====\n");
     char * shost = peth->ether_shost;
     mac_to_str( shost, buf );      
-    printf("源以太网地址:  %s\n", buf );
+    printf("source ethernet address:  %s\n", buf );
      
     char * dhost = peth->ether_dhost;
     mac_to_str( dhost, buf );
-    printf("目的以太网地址:%s\n", buf );
+    printf("destination ethernet address:  %s\n", buf );
 }
  
  
@@ -751,10 +401,10 @@ void do_frame( int sock )
             do_ip( pdata );
             break;
         case ETHERTYPE_ARP:
-            do_arp( pdata );
+            //do_arp( pdata );
             break;
         case ETHERTYPE_REVARP:
-            do_rarp( pdata );
+            //do_rarp( pdata );
             break;
         default:
             printf("Unkonw ethernet type  %d %x.\n", ntohs(peth->ether_type), ntohs(peth->ether_type) );
