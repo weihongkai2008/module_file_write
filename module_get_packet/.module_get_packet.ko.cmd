@@ -1,0 +1,1 @@
+cmd_/home/weihongkai/module_file_write/module_get_packet/module_get_packet.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /home/weihongkai/module_file_write/module_get_packet/module_get_packet.ko /home/weihongkai/module_file_write/module_get_packet/module_get_packet.o /home/weihongkai/module_file_write/module_get_packet/module_get_packet.mod.o ;  true
